@@ -5,6 +5,8 @@ import { signInFormSchema, signUpFormSchema } from "../validators";
 import { hashSync } from "bcrypt-ts-edge";
 import { prisma } from "@/db/prisma";
 
+
+
 export async function signInWithCredentials(
   prevState: unknown,
   formData: FormData
@@ -61,6 +63,7 @@ export async function signUpUser(prevState: unknown, formData: FormData) {
 
     return { success: true, message: "User created successfully" };
   } catch (error) {
+    console.error("Error signing up user", error)
     if (isRedirectError(error)) {
       throw error;
     }
