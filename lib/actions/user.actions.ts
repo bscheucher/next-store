@@ -4,8 +4,7 @@ import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { signInFormSchema, signUpFormSchema } from "../validators";
 import { hashSync } from "bcrypt-ts-edge";
 import { prisma } from "@/db/prisma";
-import { formatError } from '../utils';
-
+import { formatError } from "../utils";
 
 export async function signInWithCredentials(
   prevState: unknown,
@@ -63,7 +62,7 @@ export async function signUpUser(prevState: unknown, formData: FormData) {
 
     return { success: true, message: "User created successfully" };
   } catch (error) {
-    console.error("Error signing up user", error)
+    console.error("Error signing up user", error);
     if (isRedirectError(error)) {
       throw error;
     }
@@ -73,4 +72,13 @@ export async function signUpUser(prevState: unknown, formData: FormData) {
       message: formatError(error),
     };
   }
+}
+
+export async function getUserById(userId: string) {
+  const user = await prisma.user.findFirst({
+    where: { id: userId },
+  });
+
+  if (!user) throw new Error("User not found");
+  return user;
 }
