@@ -1,17 +1,20 @@
-"use client"
+"use client";
 
-import { toast as sonnerToast } from "sonner"
+import { toast as sonnerToast } from "sonner";
 
 type ToastOptions = {
-  description?: string
+  description?: string;
   action?: {
-    label: string
-    onClick: () => void
-  }
-  duration?: number
-}
+    label: string;
+    onClick: () => void;
+  };
+  duration?: number;
+};
 
-function toast(title: string, options?: ToastOptions) {
+function toast(
+  title: string,
+  options?: ToastOptions & { variant?: "error" | "success" }
+) {
   sonnerToast(title, {
     description: options?.description,
     action: options?.action
@@ -20,12 +23,14 @@ function toast(title: string, options?: ToastOptions) {
           onClick: options.action.onClick,
         }
       : undefined,
-    duration: options?.duration || 4000, // Default to 4 seconds
-  })
+    duration: options?.duration || 4000,
+    className:
+      options?.variant === "error" ? "border border-red-500 text-red-500" : "",
+  });
 }
 
 function useToast() {
-  return { toast }
+  return { toast };
 }
 
-export { useToast, toast }
+export { useToast, toast };

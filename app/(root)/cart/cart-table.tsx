@@ -71,7 +71,7 @@ const CartTable = ({ cart }: { cart?: Cart }) => {
                               item.productId
                             );
                             if (!res.success) {
-                              toast(res.message);
+                              toast(res.message, { variant: "error" });
                             }
                           })
                         }
@@ -129,7 +129,8 @@ const CartTable = ({ cart }: { cart?: Cart }) => {
                   <Loader className="w-4 h-4 animate-spin" />
                 ) : (
                   <ArrowRight className="w-4 h-4" />
-                )} Proceed to Checkout
+                )}{" "}
+                Proceed to Checkout
               </Button>
             </CardContent>
           </Card>
