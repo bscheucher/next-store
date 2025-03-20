@@ -8,6 +8,7 @@ import { insertOrderSchema } from "../validators";
 import { prisma } from "@/db/prisma";
 import { CartItem } from "@/types";
 import { redirect } from "next/dist/server/api-utils";
+import { convertToPlainObject } from '../utils';
 
 // Create order and order items
 
@@ -100,4 +101,18 @@ export async function createOrder() {
 
     return { success: false, message: formatError(error) };
   }
+}
+
+
+export async function getOrderById(orderId: string) {
+  const data = await prisma.order.findFirst({
+    where: {
+      id: orderId,
+    },
+    include: {
+      orderItems: true,
+      user: { select: { name: true, email: true } },
+    },
+  });
+  return convertToPlainObject(data);
 }
