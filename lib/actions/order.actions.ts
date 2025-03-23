@@ -12,6 +12,7 @@ import { revalidatePath } from "next/cache";
 import { paypal } from "../paypal";
 import { CartItem, PaymentResult } from "@/types";
 import { PAGE_SIZE } from "../constants";
+import { Prisma } from "@prisma/client";
 
 // Create order and order items
 export async function createOrder() {
@@ -274,7 +275,7 @@ export async function getMyOrders({
   page: number;
 }) {
   const session = await auth();
-  
+
   if (!session || !session.user) {
     throw new Error("User is not authenticated");
   }
@@ -293,5 +294,61 @@ export async function getMyOrders({
   return {
     data,
     totalPages: Math.ceil(dataCount / limit),
+  };
+}
+
+type SalesDataType = {
+  month: string;
+  totalSales: number;
+}[];
+
+// Get sales data and order summary
+export async function getOrderSummary() {
+  // Get counts for each resource
+  // We get the total number of orders, products, and users.
+  const ordersCount = await prisma.order.count();
+  const productsCount = await prisma.product.count();
+  const usersCount = await prisma.user.count();
+
+  // Calculate total sales
+  // We use the `aggregate` method to calculate the total sales
+  // by summing up the totalPrice field across all orders.
+  const totalSales = await prisma.order.aggregate({
+    _sum: { totalPrice: true },
+  });
+
+  // Get monthly sales
+  // We retrieve monthly sales data, grouped by month and year (formatted as MM/YY).
+  // We do this by using the `$queryRaw` method to execute a raw SQL query.
+  const salesDataRaw = await prisma.$queryRaw<
+    Array<{ month: string; totalSales: Prisma.Decimal }>
+  >`SELECT to_char("createdAt", 'MM/YY') as "month", sum("totalPrice") as "totalSales" FROM "Order" GROUP BY to_char("createdAt", 'MM/YY')`;
+
+  // We need to convert the Decimal type from Prisma to a number.
+  const salesData: SalesDataType = salesDataRaw.map((entry) => ({
+    month: entry.month,
+    totalSales: Number(entry.totalSales), // Convert Decimal to number
+  }));
+
+  // Get latest sales
+  // We fetch the latest 6 orders, sorted by creation date in descending order.
+  const latestOrders = await prisma.order.findMany({
+    orderBy: { createdAt: "desc" },
+    // We include the user's name for each order.
+    include: {
+      user: { select: { name: true } },
+    },
+    take: 6,
+  });
+
+  // We return all the gathered data in a single object.
+  // The salesData is of type `salesDataType` which is defined above the function.
+  return {
+    ordersCount,
+    productsCount,
+    usersCount,
+    totalSales,
+    latestOrders,
+    salesData,
   };
 }
