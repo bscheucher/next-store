@@ -36,6 +36,29 @@ const SearchPage = async (props: {
     sort,
   });
 
+  // Construct filter url
+  const getFilterUrl = ({
+    c,
+    s,
+    p,
+    r,
+    pg,
+  }: {
+    c?: string;
+    s?: string;
+    p?: string;
+    r?: string;
+    pg?: string;
+  }) => {
+    const params = { q, category, price, rating, sort, page };
+    if (c) params.category = c;
+    if (p) params.price = p;
+    if (r) params.rating = r;
+    if (pg) params.page = pg;
+    if (s) params.sort = s;
+    return `/search?${new URLSearchParams(params).toString()}`;
+  };
+
   return (
     <div className="grid md:grid-cols-5 md:gap-5">
       <div className="filter-links">{/* FILTERS */}</div>
