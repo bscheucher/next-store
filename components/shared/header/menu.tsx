@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import ModeToggle from "./mode-toggle";
 import UserButton from "./user-button";
+import Search from "./search";
 
 const Menu = () => {
   return (
@@ -23,7 +24,7 @@ const Menu = () => {
               Cart
             </Link>
           </Button>
-          <UserButton/ >
+          <UserButton />
         </nav>
         <nav className="md:hidden">
           <Sheet>
@@ -31,6 +32,9 @@ const Menu = () => {
               <EllipsisVertical />
             </SheetTrigger>
             <SheetContent className="flex flex-col items-start">
+              <div className="mt-10">
+                <Search />
+              </div>
               <SheetTitle>Menu</SheetTitle>
               <ModeToggle />
               <Button asChild variant="ghost">
