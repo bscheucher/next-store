@@ -10,9 +10,10 @@ import { redirect } from "next/dist/server/api-utils";
 import { convertToPlainObject } from "../utils";
 import { revalidatePath } from "next/cache";
 import { paypal } from "../paypal";
-import { CartItem, PaymentResult } from "@/types";
 import { PAGE_SIZE } from "../constants";
 import { Prisma } from "@prisma/client";
+import { CartItem, PaymentResult, ShippingAddress } from "@/types";
+import { sendPurchaseReceipt } from "@/email";
 
 // Create order and order items
 export async function createOrder() {
@@ -118,8 +119,6 @@ export async function getOrderById(orderId: string) {
   });
   return convertToPlainObject(data);
 }
-
-
 
 // Create a Paypal Order
 export async function createPayPalOrder(orderId: string) {
@@ -266,6 +265,15 @@ export async function updateOrderToPaid({
   if (!updatedOrder) {
     throw new Error("Order not found");
   }
+
+  // Send the purchase receipt email with the updated order
+  sendPurchaseReceipt({
+    order: {
+      ...updatedOrder,
+      shippingAddress: updatedOrder.shippingAddress as ShippingAddress,
+      paymentResult: updatedOrder.paymentResult as PaymentResult,
+    },
+  });
 }
 
 // Get User Orders
