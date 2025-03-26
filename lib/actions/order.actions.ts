@@ -119,6 +119,8 @@ export async function getOrderById(orderId: string) {
   return convertToPlainObject(data);
 }
 
+
+
 // Create a Paypal Order
 export async function createPayPalOrder(orderId: string) {
   try {
@@ -208,7 +210,7 @@ export async function approvePayPalOrder(
 }
 
 // Update Order to Paid in Database
-async function updateOrderToPaid({
+export async function updateOrderToPaid({
   orderId,
   paymentResult,
 }: {
