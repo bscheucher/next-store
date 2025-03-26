@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { SERVER_URL } from "@/lib/constants";
+// SERVER_URL causes redirect error in vercel deployment, change to env NEXT_PUBLIC_APP_SERVER_URL
+// import { SERVER_URL } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
 import {
   Elements,
@@ -26,6 +27,8 @@ const StripePayment = ({
     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string
   );
   const { theme, systemTheme } = useTheme();
+
+  const SERVER_URL = process.env.NEXT_PUBLIC_APP_SERVER_URL as string;
 
   // Stripe Form Component
   const StripeForm = () => {
