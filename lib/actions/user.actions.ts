@@ -94,6 +94,36 @@ export async function getUserById(userId: string) {
   return user;
 }
 
+export async function createUserFromGoogle(userEmail: string) {
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { email: userEmail },
+    });
+
+    if (existingUser) {
+      return existingUser; // User already exists
+    }
+
+    // Extract the username from the email
+    const username = userEmail.split("@")[0];
+
+    // Truncate the username to a maximum of 12 characters
+    const truncatedUsername = username.substring(0, 12);
+
+    const newUser = await prisma.user.create({
+      data: {
+        email: userEmail,
+        name: truncatedUsername,
+      },
+    });
+
+    return newUser;
+  } catch (error) {
+    console.error("Error creating user from Google:", error);
+    throw error; // Rethrow the error for handling elsewhere
+  }
+}
+
 // Update the user's address
 export async function updateUserAddress(data: ShippingAddress) {
   try {

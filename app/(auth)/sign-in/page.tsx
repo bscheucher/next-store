@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import CredentialsSignInForm from "./credentials-signin-form";
 import { APP_NAME } from "@/lib/constants";
-
+import GoogleLoginButton from "./google-sign-in-button";
 
 export const metadata: Metadata = {
   title: "Sign In",
@@ -28,7 +28,8 @@ const SignInPage = async (props: {
   if (session) {
     return redirect(callbackUrl || "/");
   }
-
+  console.log("GOOGLE_ID:", process.env.GOOGLE_ID);
+  console.log("GOOGLE_SECRET:", process.env.GOOGLE_SECRET);
   return (
     <div className="w-full max-w-md mx-auto">
       <Card>
@@ -46,6 +47,7 @@ const SignInPage = async (props: {
           <CardDescription className="text-center">
             Sign in to your account
           </CardDescription>
+          <GoogleLoginButton />
         </CardHeader>
         <CardContent className="space-y-4">
           <CredentialsSignInForm />

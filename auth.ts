@@ -5,6 +5,8 @@ import { prisma } from "@/db/prisma";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { authConfig } from "./auth.config";
 import { cookies } from "next/headers";
+import GoogleProvider from "next-auth/providers/google";
+import { createUserFromGoogle } from "./lib/actions/user.actions";
 
 export const config = {
   pages: {
@@ -53,6 +55,17 @@ export const config = {
         return null;
       },
     }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_ID,
+      clientSecret: process.env.GOOGLE_SECRET,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
+    }),
   ],
   callbacks: {
     async session({ session, user, trigger, token }: any) {
@@ -60,17 +73,40 @@ export const config = {
       session.user.id = token.sub;
       session.user.name = token.name;
       session.user.role = token.role;
+      console.log("Session User Id", session.user.id);
+
       // If there is an update, set the name on the session
       if (trigger === "update" && token.name) {
         session.user.name = token.name;
       }
       return session;
     },
-    async jwt({ token, user, trigger, session }: any) {
+    async jwt({ token, user, account, profile, trigger, session }: any) {
+      console.log("JWT Callback 1:", { token, user, account, profile });
       // Assign user fields to token
       if (user) {
         token.id = user.id;
         token.role = user.role;
+
+        // Handle Google Sign-In
+        if (account?.provider === "google" && profile?.email) {
+          console.log("Google Provider is triggered");
+          try {
+            // Check if the user exists or create a new user
+            const googleUser = await createUserFromGoogle(profile.email);
+            console.log("Google User", googleUser);
+
+            if (googleUser) {
+              token.id = googleUser.id;
+              token.name = googleUser.name;
+              token.email = googleUser.email;
+            }
+            console.log("JWT Callback 2:", { token, user, account, profile });
+          } catch (error) {
+            console.error("Error handling Google sign-in:", error);
+            // Handle the error appropriately (e.g., redirect to an error page)
+          }
+        }
 
         // If user has no name, use email as their default name
         if (user.name === "NO_NAME") {
@@ -82,6 +118,12 @@ export const config = {
             data: { name: token.name },
           });
         }
+
+        // Handle session updates (e.g., name change)
+        if (session?.user.name && trigger === "update") {
+          token.name = session.user.name;
+        }
+
         if (trigger === "signIn" || trigger === "signUp") {
           const cookiesObject = await cookies();
           const sessionCartId = cookiesObject.get("sessionCartId")?.value;

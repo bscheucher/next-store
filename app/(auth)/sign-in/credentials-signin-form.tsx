@@ -9,6 +9,7 @@ import { useFormStatus } from "react-dom";
 import { signInWithCredentials } from "@/lib/actions/user.actions";
 import { useSearchParams } from "next/navigation";
 
+
 const CredentialsSignInForm = () => {
   const [data, action] = useActionState(signInWithCredentials, {
     success: false,
@@ -26,6 +27,8 @@ const CredentialsSignInForm = () => {
       </Button>
     );
   };
+
+
 
   return (
     <form action={action}>
